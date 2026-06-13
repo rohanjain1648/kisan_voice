@@ -1,4 +1,4 @@
-"""Speech-to-Text module using OpenAI Whisper."""
+"""Speech-to-Text module using faster-whisper (CPU-optimised, no torch required)."""
 import os
 import logging
 
@@ -6,24 +6,6 @@ logger = logging.getLogger(__name__)
 
 _model = None
 _model_size = os.environ.get("WHISPER_MODEL", "base")
-
-
-def _load_model():
-    global _model
-    if _model is None:
-        try:
-            import whisper
-            logger.info(f"Loading Whisper model: {_model_size}")
-            _model = whisper.load_model(_model_size)
-            logger.info("Whisper model loaded successfully")
-        except ImportError:
-            logger.error("openai-whisper not installed. Run: pip install openai-whisper")
-            return None
-        except Exception as e:
-            logger.error(f"Failed to load Whisper model: {e}")
-            return None
-    return _model
-
 
 LANG_MAP = {
     "English": "en",
@@ -39,6 +21,22 @@ LANG_MAP = {
 }
 
 
+def _load_model():
+    global _model
+    if _model is None:
+        try:
+            from faster_whisper import WhisperModel
+            logger.info(f"Loading faster-whisper model: {_model_size}")
+            # int8 quantisation → ~2× smaller memory, ~2× faster on CPU
+            _model = WhisperModel(_model_size, device="cpu", compute_type="int8")
+            logger.info("faster-whisper model loaded")
+        except ImportError:
+            logger.error("faster-whisper not installed. Run: pip install faster-whisper")
+        except Exception as e:
+            logger.error(f"Failed to load faster-whisper model: {e}")
+    return _model
+
+
 def transcribe(audio_path: str, language: str = "English") -> tuple[str, str]:
     """
     Transcribe audio file to text.
@@ -51,21 +49,21 @@ def transcribe(audio_path: str, language: str = "English") -> tuple[str, str]:
 
     model = _load_model()
     if model is None:
-        return "", "Whisper model unavailable. Check installation."
+        return "", "Whisper model unavailable. Run: pip install faster-whisper"
+
+    lang_code = LANG_MAP.get(language, "en")
 
     try:
-        lang_code = LANG_MAP.get(language, "en")
-        options = {"language": lang_code, "task": "transcribe"}
-
-        import whisper
-        result = model.transcribe(audio_path, **options)
-        text = result.get("text", "").strip()
-
+        segments, _ = model.transcribe(
+            audio_path,
+            language=lang_code,
+            beam_size=3,          # balance speed vs accuracy
+            vad_filter=True,      # skip silence automatically
+        )
+        text = " ".join(seg.text for seg in segments).strip()
         if not text:
             return "", "Could not detect speech. Please speak clearly and try again."
-
         return text, ""
-
     except Exception as e:
         logger.error(f"Transcription error: {e}")
         return "", f"Transcription failed: {str(e)}"
@@ -73,7 +71,7 @@ def transcribe(audio_path: str, language: str = "English") -> tuple[str, str]:
 
 def is_available() -> bool:
     try:
-        import whisper  # noqa: F401
+        from faster_whisper import WhisperModel  # noqa: F401
         return True
     except ImportError:
         return False

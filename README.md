@@ -1,3 +1,16 @@
+---
+title: KisanVoice Natural Farming Consultant
+emoji: 🌾
+colorFrom: green
+colorTo: green
+sdk: gradio
+sdk_version: 6.11.0
+app_file: app.py
+pinned: false
+license: mit
+short_description: Voice-first AI natural farming consultant for Indian farmers
+---
+
 # 🌾 KisanVoice — Voice-Based Natural Farming Consultant
 
 A voice-first AI consultant for Indian farmers transitioning to **Zero Budget Natural Farming (ZBNF)** and multilevel agroforestry. Ask questions by voice, get expert organic farming advice instantly — in your language.

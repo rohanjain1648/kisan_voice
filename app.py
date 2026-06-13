@@ -808,11 +808,14 @@ def build_app() -> gr.Blocks:
 
 if __name__ == "__main__":
     port = int(os.environ.get("GRADIO_SERVER_PORT", 7860))
-    share = os.environ.get("GRADIO_SHARE", "true").lower() == "true"
 
-    logger.info("Starting KisanVoice application...")
-    logger.info(f"API configured: {llm.is_configured()}")
-    logger.info(f"Whisper available: {stt.is_available()}")
+    # HF Spaces sets SPACE_ID — it provides the public URL itself, no share tunnel needed
+    on_hf_spaces = bool(os.environ.get("SPACE_ID"))
+    share = False if on_hf_spaces else os.environ.get("GRADIO_SHARE", "true").lower() == "true"
+
+    logger.info(f"Starting KisanVoice | HF Spaces: {on_hf_spaces} | Share: {share}")
+    logger.info(f"Groq API configured: {llm.is_configured()}")
+    logger.info(f"Whisper (faster-whisper) available: {stt.is_available()}")
 
     app = build_app()
     app.launch(
