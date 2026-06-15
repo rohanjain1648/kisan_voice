@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 # Text model — fastest + most capable on Groq free tier
 TEXT_MODEL = "llama-3.3-70b-versatile"
 # Vision model for crop disease photo analysis
-VISION_MODEL = "llama-3.2-11b-vision-preview"
+VISION_MODEL = "meta-llama/llama-4-scout-17b-16e-instruct"
 
 SYSTEM_PROMPT = """You are **KisanVoice** (किसान वॉयस), a compassionate expert in Zero Budget Natural Farming (ZBNF) and multilevel agroforestry, serving small and marginal farmers across India.
 
