@@ -8,16 +8,32 @@ _model = None
 _model_size = os.environ.get("WHISPER_MODEL", "base")
 
 LANG_MAP = {
-    "English": "en",
-    "हिंदी (Hindi)": "hi",
-    "தமிழ் (Tamil)": "ta",
-    "తెలుగు (Telugu)": "te",
-    "मराठी (Marathi)": "mr",
-    "ਪੰਜਾਬੀ (Punjabi)": "pa",
-    "বাংলা (Bengali)": "bn",
-    "ಕನ್ನಡ (Kannada)": "kn",
+    "English":              "en",
+    "हिंदी (Hindi)":       "hi",
+    "தமிழ் (Tamil)":       "ta",
+    "తెలుగు (Telugu)":     "te",
+    "मराठी (Marathi)":     "mr",
+    "ਪੰਜਾਬੀ (Punjabi)":   "pa",
+    "বাংলা (Bengali)":     "bn",
+    "ಕನ್ನಡ (Kannada)":    "kn",
     "മലയാളം (Malayalam)": "ml",
-    "ગુજરાતી (Gujarati)": "gu",
+    "ગુજરાતી (Gujarati)":  "gu",
+}
+
+# Script-priming prompts — force Whisper to output the correct script.
+# Hindi and Urdu share phonetics; without this Whisper often picks Urdu
+# and transcribes in Nastaliq script instead of Devanagari.
+INITIAL_PROMPTS = {
+    "hi": "यह हिंदी में एक कृषि प्रश्न है।",
+    "mr": "हे मराठी भाषेतील कृषी प्रश्न आहे।",
+    "ta": "இது தமிழில் ஒரு விவசாய கேள்வி.",
+    "te": "ఇది తెలుగులో వ్యవసాయ ప్రశ్న.",
+    "bn": "এটি বাংলায় একটি কৃষি প্রশ্ন।",
+    "pa": "ਇਹ ਪੰਜਾਬੀ ਵਿੱਚ ਇੱਕ ਖੇਤੀ ਸਵਾਲ ਹੈ।",
+    "kn": "ಇದು ಕನ್ನಡದಲ್ಲಿ ಕೃಷಿ ಪ್ರಶ್ನೆ.",
+    "ml": "ഇത് മലയാളത്തിൽ ഒരു കൃഷി ചോദ്യം.",
+    "gu": "આ ગુજરાતીમાં એક ખેતી પ્રશ્ન છે.",
+    "en": "This is a natural farming question in English.",
 }
 
 
@@ -27,7 +43,6 @@ def _load_model():
         try:
             from faster_whisper import WhisperModel
             logger.info(f"Loading faster-whisper model: {_model_size}")
-            # int8 quantisation → ~2× smaller memory, ~2× faster on CPU
             _model = WhisperModel(_model_size, device="cpu", compute_type="int8")
             logger.info("faster-whisper model loaded")
         except ImportError:
@@ -52,13 +67,15 @@ def transcribe(audio_path: str, language: str = "English") -> tuple[str, str]:
         return "", "Whisper model unavailable. Run: pip install faster-whisper"
 
     lang_code = LANG_MAP.get(language, "en")
+    initial_prompt = INITIAL_PROMPTS.get(lang_code, "")
 
     try:
         segments, _ = model.transcribe(
             audio_path,
             language=lang_code,
-            beam_size=3,          # balance speed vs accuracy
-            vad_filter=True,      # skip silence automatically
+            beam_size=3,
+            vad_filter=True,
+            initial_prompt=initial_prompt,
         )
         text = " ".join(seg.text for seg in segments).strip()
         if not text:
