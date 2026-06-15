@@ -99,10 +99,11 @@ body { font-family: 'Segoe UI', 'Noto Sans', sans-serif; }
 def _transcribe(audio_path, language):
     if audio_path is None:
         return "", "⚠️ No audio recorded."
-    text, err = stt.transcribe(audio_path, language)
+    text, detected_lang, err = stt.transcribe(audio_path, language)
     if err:
         return "", f"⚠️ {err}"
-    return text, f"✅ Heard: \"{text}\""
+    lang_note = f" [{detected_lang}]" if detected_lang else ""
+    return text, f"✅ Heard{lang_note}: \"{text}\""
 
 
 def _respond(user_text: str, language: str, rag_context: str = "", demo_type="default", image_b64=None):
@@ -164,10 +165,11 @@ def handle_disease_query(audio, symptoms_text, image, language):
     final_text = symptoms_text.strip()
     status_msg = ""
     if audio is not None:
-        transcribed, err = stt.transcribe(audio, language)
+        transcribed, detected_lang, err = stt.transcribe(audio, language)
         if transcribed:
             final_text = transcribed
-            status_msg = f"🎤 Heard: \"{transcribed}\""
+            lang_note = f" [{detected_lang}]" if detected_lang else ""
+            status_msg = f"🎤 Heard{lang_note}: \"{transcribed}\""
 
     if not final_text and image is None:
         return "Please describe symptoms or upload a photo.", "", None
@@ -227,7 +229,7 @@ def handle_seed_guidance(audio, crop, state, acres_str, language):
     # Voice → override crop if transcribed
     voice_note = ""
     if audio is not None:
-        transcribed, _ = stt.transcribe(audio, language)
+        transcribed, _, _ = stt.transcribe(audio, language)
         if transcribed:
             voice_note = transcribed
             # try to extract crop name from voice
@@ -261,7 +263,7 @@ def handle_education_query(audio, text_query, topic_label, language):
     # Voice input
     final_query = text_query.strip()
     if audio is not None:
-        transcribed, _ = stt.transcribe(audio, language)
+        transcribed, _, _ = stt.transcribe(audio, language)
         if transcribed:
             final_query = transcribed
             if not topic_key:
