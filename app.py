@@ -7,6 +7,7 @@ import os
 import io
 import base64
 import logging
+import tempfile
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -824,4 +825,5 @@ if __name__ == "__main__":
         share=share,
         show_error=True,
         css=CSS,
+        allowed_paths=[tempfile.gettempdir()],
     )
