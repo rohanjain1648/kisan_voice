@@ -15,6 +15,11 @@ short_description: Voice-first AI natural farming consultant for Indian farmers
 
 A voice-first AI consultant for Indian farmers transitioning to **Zero Budget Natural Farming (ZBNF)** and multilevel agroforestry. Ask questions by voice, get expert organic farming advice instantly — in your language.
 
+> 🚀 **Live Demo**: [https://huggingface.co/spaces/rohanjain1648/kisanvoice](https://huggingface.co/spaces/rohanjain1648/kisanvoice)
+
+> 📊 **Project Visuals & Pitch Deck**: [View our complete pitch deck and visuals on NotebookLM](https://notebooklm.google.com/notebook/f69f8c04-062c-47cf-8b01-4f8f22185d2c)
+
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-HuggingFace%20Spaces-yellow)](https://huggingface.co/spaces/rohanjain1648/kisanvoice)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue)](https://python.org)
 [![Gradio](https://img.shields.io/badge/Gradio-4.x-orange)](https://gradio.app)
 [![Groq](https://img.shields.io/badge/Groq-llama--3.3--70b-orange)](https://console.groq.com)
